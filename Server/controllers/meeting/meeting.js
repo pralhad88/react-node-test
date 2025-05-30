@@ -3,8 +3,11 @@ const mongoose = require('mongoose');
 
 // CREATE - Add a new meeting
 const add = async (req, res) => {
+  const { userId } = req.user;
+  const meetingPayload = req.body;
+  meetingPayload['createBy'] = userId
   try {
-    const meeting = new MeetingHistory(req.body);
+    const meeting = new MeetingHistory(meetingPayload);
     await meeting.save();
     res.status(201).json({ success: true, message: 'Meeting created successfully', data: meeting });
   } catch (error) {
@@ -16,8 +19,8 @@ const add = async (req, res) => {
 const index = async (req, res) => {
   try {
     const meetings = await MeetingHistory.find({ deleted: false })
-      .populate('attendes')
-      .populate('attendesLead')
+      // .populate('attendes')
+      // .populate('attendesLead')
       .populate('createBy');
     res.json({ success: true, data: meetings });
   } catch (error) {
@@ -30,8 +33,8 @@ const view = async (req, res) => {
   try {
     const { id } = req.params;
     const meeting = await MeetingHistory.findById(id)
-      .populate('attendes')
-      .populate('attendesLead')
+      // .populate('attendes')
+      // .populate('attendesLead')
       .populate('createBy');
     if (!meeting || meeting.deleted) {
       return res.status(404).json({ success: false, message: 'Meeting not found' });
