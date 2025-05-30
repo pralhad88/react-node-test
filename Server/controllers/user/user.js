@@ -155,7 +155,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
         // Find the user by username
         const user = await User.findOne({ username, deleted: false }).populate({
-            path: 'roles'
+            path: 'roles',
         });
         if (!user) {
             res.status(401).json({ error: 'Authentication failed, invalid username' });
@@ -168,8 +168,11 @@ const login = async (req, res) => {
             return;
         }
         // Create a JWT token
-        const token = jwt.sign({ userId: user._id }, 'secret_key', { expiresIn: '1d' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+        // Remove password before sending response
+        delete user.password;
+        
         res.status(200).setHeader('Authorization', `Bearer${token}`).json({ token: token, user });
     } catch (error) {
         res.status(500).json({ error: 'An error occurred' });
