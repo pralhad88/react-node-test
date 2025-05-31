@@ -13,7 +13,7 @@ import { MeetingSchema } from 'schema';
 import { getApi, postApi } from 'services/api';
 
 const AddMeeting = (props) => {
-    const { onClose, isOpen, setAction, from, fetchData, view } = props
+    const { onClose, isOpen, setAction, from, fetchData, view, addMeetingToList } = props
     const [leaddata, setLeadData] = useState([])
     const [contactdata, setContactData] = useState([])
     const [isLoding, setIsLoding] = useState(false)
@@ -35,15 +35,45 @@ const AddMeeting = (props) => {
         location: '',
         related: props.leadContect === 'contactView' ? 'Contact' : props.leadContect === 'leadView' ? 'Lead' : 'None',
         dateTime: '',
-        notes: '',
-        createBy: user?._id,
+        notes: ''
     }
 
     const formik = useFormik({
         initialValues: initialValues,
         validationSchema: MeetingSchema,
-        onSubmit: (values, { resetForm }) => {
-            
+        onSubmit: async (values, { resetForm }) => {
+            setIsLoding(true);
+            try {
+                const payload = {
+                    agenda: values.agenda,
+                    attendes: values.related === "Contact" ? values.attendes : [],
+                    attendesLead: values.related === "Lead" ? values.attendesLead : [],
+                    location: values.location,
+                    related: values.related,
+                    dateTime: values.dateTime,
+                    notes: values.notes
+                };
+
+                const response = await postApi('api/meeting/add', payload);
+    
+                 console.log(response)
+                if (response?.status === 200 || response?.status === 201) {
+                    toast.success("Meeting created successfully!");
+                    resetForm();
+                    onClose();
+
+                    if (addMeetingToList) {
+                        addMeetingToList(response?.data); // Add to list immediately
+                    }
+                    fetchData && fetchData(); // Refresh parent data
+                } else {
+                    toast.error(response?.data?.message || "Something went wrong!");
+                }
+            } catch (err) {
+                toast.error("Error while creating meeting!");
+            } finally {
+                setIsLoding(false);
+            }
         },
     });
     const { errors, touched, values, handleBlur, handleChange, handleSubmit, setFieldValue } = formik
@@ -53,11 +83,27 @@ const AddMeeting = (props) => {
     };
 
     const fetchAllData = async () => {
-        
-    }
+        try {
+            setIsLoding(true);
+            if (values.related === 'Contact') {
+                const contactRes = await getApi('api/contact');
+                setContactData(contactRes?.data || []);
+            } else if (values.related === 'Lead') {
+                const leadRes = await getApi('api/lead');
+                setLeadData(leadRes?.data || []);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoding(false);
+        }
+    };
+
 
     useEffect(() => {
-
+         if (props.id || values.related) {
+            fetchAllData();
+        }
     }, [props.id, values.related])
 
     const extractLabels = (selectedItems) => {

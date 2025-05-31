@@ -91,7 +91,7 @@ const Index = () => {
     const handleDeleteMeeting = async (ids) => {
         try {
             setIsLoding(true)
-            let response = await deleteManyApi('api/meeting/deleteMany', ids)
+            let response = await deleteManyApi('api/meeting/deleteMany', {ids})
             if (response.status === 200) {
                 setSelectedValues([])
                 setDeleteMany(false)
@@ -108,6 +108,10 @@ const Index = () => {
     // const [selectedColumns, setSelectedColumns] = useState([...tableColumns]);
     // const dataColumn = tableColumns?.filter(item => selectedColumns?.find(colum => colum?.Header === item.Header))
 
+    
+    const addMeetingToList = (newMeeting) => {
+        setData(prev => [newMeeting, ...prev]);
+    };
 
     useEffect(() => {
         fetchData();
@@ -121,7 +125,7 @@ const Index = () => {
                 columnData={tableColumns ?? []}
                 // dataColumn={dataColumn ?? []}
                 allData={data ?? []}
-                tableData={data}
+                tableData={data ?? []}
                 searchDisplay={displaySearchData}
                 setSearchDisplay={setDisplaySearchData}
                 searchedDataOut={searchedData}
@@ -158,7 +162,7 @@ const Index = () => {
                 setGetTagValues={setGetTagValuesOutside}
                 setSearchbox={setSearchboxOutside}
             />
-            <AddMeeting setAction={setAction} isOpen={isOpen} onClose={onClose} />
+            <AddMeeting setAction={setAction} isOpen={isOpen} onClose={onClose} addMeetingToList={addMeetingToList} />
 
             {/* Delete model */}
             <CommonDeleteModel isOpen={deleteMany} onClose={() => setDeleteMany(false)} type='Meetings' handleDeleteData={handleDeleteMeeting} ids={selectedValues} />

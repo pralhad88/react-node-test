@@ -9,9 +9,10 @@ const add = async (req, res) => {
   try {
     const meeting = new MeetingHistory(meetingPayload);
     await meeting.save();
-    res.status(201).json({ success: true, message: 'Meeting created successfully', data: meeting });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    return res.status(201).json(meeting);
+  } catch (err) {
+    console.error("Error :", err);
+    return res.status(400).json({ err, error: "Something wents wrong" });
   }
 };
 
@@ -22,9 +23,10 @@ const index = async (req, res) => {
       // .populate('attendes')
       // .populate('attendesLead')
       .populate('createBy');
-    res.json({ success: true, data: meetings });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(200).json(meetings);
+  } catch (err) {
+    console.error("Error :", err);
+    return res.status(400).json({ err, error: "Something wents wrong" });
   }
 };
 
@@ -39,9 +41,10 @@ const view = async (req, res) => {
     if (!meeting || meeting.deleted) {
       return res.status(404).json({ success: false, message: 'Meeting not found' });
     }
-    res.json({ success: true, data: meeting });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    return res.status(200).json(meeting);
+  } catch (err) {
+    console.error("Error :", err);
+    return res.status(400).json({ err, error: "Something wents wrong" });
   }
 };
 
@@ -57,9 +60,10 @@ const deleteData = async (req, res) => {
     if (!meeting) {
       return res.status(404).json({ success: false, message: 'Meeting not found' });
     }
-    res.json({ success: true, message: 'Meeting deleted (soft delete)' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(200).send('Meeting deleted (soft delete)');
+  } catch (err) {
+    console.error("Error :", err);
+    return res.status(400).json({ err, error: "Something wents wrong" });
   }
 };
 
@@ -71,14 +75,15 @@ const deleteMany = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid input, array of IDs required' });
     }
 
-    const result = await MeetingHistory.updateMany(
+    await MeetingHistory.updateMany(
       { _id: { $in: ids } },
       { $set: { deleted: true } }
     );
 
-    res.json({ success: true, message: `${result.modifiedCount} meetings deleted` });
+    res.status(200).send('Meetings Deleted');
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error :", err);
+    return res.status(400).json({ err, error: "Something wents wrong" });
   }
 };
 

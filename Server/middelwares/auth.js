@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken');
 
 const auth = (req, res, next) => {
-    const token = req.headers.authorization;
-
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    
+    
+    if (!authHeader) {
         res.status(401).json({ message: "Authentication failed , Token missing" });
     }
     try {
-        const decode = jwt.verify(token.split(' ')[1], process.env.JWT_SECRET)
+        const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1]: authHeader;
+        const decode = jwt.verify(token, process.env.JWT_SECRET)
         req.user = decode
         next();
     } catch (err) {
