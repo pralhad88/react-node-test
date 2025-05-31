@@ -4,11 +4,11 @@ const meetingHistory = new mongoose.Schema({
     agenda: { type: String, required: true },
     attendes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contact',
+        ref: 'Contacts',
     }],
     attendesLead: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Lead',
+        ref: 'Leads',
     }],
     location: String,
     related: String,
